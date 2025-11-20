@@ -150,14 +150,21 @@
 
   async function loadSchedule(id) {
     if (!id) return;
-    const res = await fetch(`/api/schedules/${encodeURIComponent(id)}`);
-    const data = await res.json();
-    if (!res.ok) {
-      alert(data.error || 'Unable to load schedule');
-      return;
+    try {
+      const res = await fetch(`/api/schedules/${encodeURIComponent(id)}`);
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Unable to load schedule');
+      }
+      pushQueryId(id);
+      hydrateSchedule(data.schedule, data.aggregated);
+    } catch (err) {
+      setStatus('No schedule loaded');
+      scheduleRangeEl.textContent = 'Could not load schedule. Double-check the ID or try again.';
+      shareLinkEl.hidden = true;
+      console.error(err);
+      alert(err.message || 'Unable to load schedule');
     }
-    pushQueryId(id);
-    hydrateSchedule(data.schedule, data.aggregated);
   }
 
   function pushQueryId(id) {
@@ -458,8 +465,14 @@
   function init() {
     populateTimeZones(participantTzSelect, state.viewerTimeZone);
 
-    const params = new URL(window.location.href).searchParams;
-    const scheduleId = params.get('schedule');
+    const url = new URL(window.location.href);
+    const params = url.searchParams;
+    let scheduleId = params.get('schedule') || params.get('id');
+    if (!scheduleId) {
+      const parts = url.pathname.split('/').filter(Boolean);
+      const maybeId = parts.length > 1 && parts[0].startsWith('schedule') ? parts[1] : null;
+      if (maybeId) scheduleId = maybeId;
+    }
     if (scheduleId) loadSchedule(scheduleId);
 
     if (loadForm) {
