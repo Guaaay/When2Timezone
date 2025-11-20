@@ -80,6 +80,11 @@
     });
   }
 
+  function parseDateMiddayUtc(dateStr) {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+  }
+
   function formatRange(iso, minutes, tz) {
     const start = new Date(iso);
     const end = new Date(start.getTime() + minutes * 60000);
@@ -90,7 +95,7 @@
   }
 
   function formatDay(dateStr, tz) {
-    const d = new Date(dateStr);
+    const d = parseDateMiddayUtc(dateStr);
     return d.toLocaleDateString(undefined, { timeZone: tz, weekday: 'short', month: 'short', day: 'numeric' });
   }
 
