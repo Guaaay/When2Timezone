@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>When2Timezone</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero hero--landing">
+        <div class="hero__title">
+          <div class="dot"></div>
+          <div>
+            <p class="eyebrow">Timezone-smart coordination</p>
+            <h1>When2Timezone</h1>
+            <p class="lede">Pick a meeting time that works everywhere. Create a schedule or jump into one that's already live.</p>
+          </div>
+        </div>
+        <div class="hero__panel">
+          <form id="create-form" class="card" aria-label="Create schedule">
+            <div class="form-head">
+              <div>
+                <p class="eyebrow">Create a schedule</p>
+                <h3 id="create">Start fresh</h3>
+              </div>
+              <div class="badge">New</div>
+            </div>
+            <label class="field">
+              <span>Title</span>
+              <input name="title" required placeholder="Product sync or team retro" />
+            </label>
+            <label class="field">
+              <span>Start date</span>
+              <input type="date" name="startDate" required />
+            </label>
+            <label class="field">
+              <span>End date</span>
+              <input type="date" name="endDate" required />
+            </label>
+            <div class="field two-col">
+              <label>
+                <span>Start hour</span>
+                <input type="number" name="startHour" min="0" max="23" value="8" />
+              </label>
+              <label>
+                <span>End hour</span>
+                <input type="number" name="endHour" min="1" max="24" value="20" />
+              </label>
+            </div>
+            <div class="field two-col">
+              <label>
+                <span>Slot minutes</span>
+                <input type="number" name="slotMinutes" min="15" max="120" value="30" />
+              </label>
+              <label>
+                <span>Base timezone</span>
+                <select name="baseTimeZone" id="base-timezone"></select>
+              </label>
+            </div>
+            <button type="submit" class="primary">Create & continue</button>
+          </form>
+          <form id="join-form" class="card" aria-label="Join schedule">
+            <p class="eyebrow">Join an existing one</p>
+            <h3 id="join">Jump into a live schedule</h3>
+            <label class="field">
+              <span>Schedule ID</span>
+              <input name="scheduleId" required placeholder="e.g., a1b2c3" />
+            </label>
+            <button type="submit" class="ghost">Open schedule</button>
+            <p class="hint">Have a link already? Paste it in your browser — it keeps the schedule ID.</p>
+          </form>
+        </div>
+      </header>
+    </div>
+
+    <script src="/landing.js"></script>
+  </body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Schedule | When2Timezone</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero hero--schedule">
+        <div class="hero__title">
+          <div class="dot"></div>
+          <div>
+            <p class="eyebrow">Schedule board</p>
+            <h1>Coordinate with layers</h1>
+            <p class="lede">Load a schedule, mark your availability, and see overlaps in your own timezone.</p>
+            <p class="hint">Need a new one? <a class="inline-link" href="/">Go back to the landing page.</a></p>
+          </div>
+        </div>
+        <form id="load-form" class="card slim-card" aria-label="Open schedule by ID">
+          <p class="eyebrow">Switch schedule</p>
+          <h3>Load by ID</h3>
+          <label class="field">
+            <span>Schedule ID</span>
+            <input name="scheduleId" required placeholder="Paste ID here" />
+          </label>
+          <button type="submit" class="ghost">Open</button>
+        </form>
+      </header>
+
+      <main id="app" class="app" data-loaded="false">
+        <section class="card schedule-meta">
+          <div>
+            <p class="eyebrow">Schedule</p>
+            <h2 id="schedule-title">No schedule loaded</h2>
+            <p id="schedule-range"></p>
+            <div id="share-link" class="share-link" hidden></div>
+          </div>
+          <div class="pill-stack" id="meta-pills"></div>
+        </section>
+
+        <section class="card participant">
+          <div class="participant__header">
+            <div>
+              <p class="eyebrow">Your identity</p>
+              <h3>Who are you?</h3>
+            </div>
+            <button id="load-participant" class="ghost small" type="button">Load my saved times</button>
+          </div>
+          <div class="participant__form">
+            <label class="field">
+              <span>Your name</span>
+              <input id="participant-name" placeholder="Jessie" />
+            </label>
+            <label class="field">
+              <span>Your timezone</span>
+              <select id="participant-timezone"></select>
+            </label>
+            <button id="save-availability" class="primary" type="button">Save availability</button>
+          </div>
+          <p class="hint">We only need the name to fetch and update your existing availability.</p>
+        </section>
+
+        <section class="card availability">
+          <div class="availability__header">
+            <div>
+              <p class="eyebrow">Availability</p>
+              <h3>Click to mark when you can attend</h3>
+            </div>
+            <div class="legend">
+              <span class="legend-chip yours"></span> You
+              <span class="legend-chip overlap"></span> Overlap intensity
+            </div>
+          </div>
+          <div class="table-panels">
+            <div class="table-card">
+              <div class="table-head">
+                <div>
+                  <p class="eyebrow">Compact view</p>
+                  <h4>Your availability</h4>
+                </div>
+                <p class="hint">Click or drag in the cells to update instantly.</p>
+              </div>
+              <div id="your-table" class="heat-table"></div>
+            </div>
+            <div class="table-card">
+              <div class="table-head">
+                <div>
+                  <p class="eyebrow">Group overlap</p>
+                  <h4>Everyone's availability</h4>
+                </div>
+                <p class="hint">Colors deepen as more people are free.</p>
+              </div>
+              <div id="group-table" class="heat-table"></div>
+            </div>
+          </div>
+          <div class="overlap">
+            <div>
+              <p class="eyebrow">Overlap radar</p>
+              <h4>Top matches</h4>
+            </div>
+            <div id="top-slots" class="top-slots"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
