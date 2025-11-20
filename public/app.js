@@ -13,7 +13,7 @@
   const topSlotsEl = document.getElementById('top-slots');
   const yourTableEl = document.getElementById('your-table');
   const groupTableEl = document.getElementById('group-table');
-  const tooltipEl = createTooltip();
+  let tooltipEl = createTooltip();
 
   const state = {
     schedule: null,
@@ -56,6 +56,7 @@
   }
 
   function populateTimeZones(select, preferred) {
+    if (!select) return;
     const tzs = supportedTimeZones();
     select.innerHTML = '';
     tzs.forEach(tz => {
@@ -101,10 +102,11 @@
   }
 
   function setStatus(text) {
-    scheduleTitleEl.textContent = text;
+    if (scheduleTitleEl) scheduleTitleEl.textContent = text;
   }
 
   function createTooltip() {
+    if (typeof document === 'undefined' || !document.body) return null;
     const el = document.createElement('div');
     el.className = 'hover-card';
     document.body.appendChild(el);
@@ -112,6 +114,7 @@
   }
 
   function showTooltip({ idx, iso, dayStr, tz, anchorEvent }) {
+    if (!tooltipEl) tooltipEl = createTooltip();
     if (!tooltipEl) return;
     const names = namesAvailableAt(idx);
     const count = state.aggregated ? state.aggregated.counts[idx] : 0;
@@ -160,10 +163,10 @@
       hydrateSchedule(data.schedule, data.aggregated);
     } catch (err) {
       setStatus('No schedule loaded');
-      scheduleRangeEl.textContent = 'Could not load schedule. Double-check the ID or try again.';
-      shareLinkEl.hidden = true;
+      if (scheduleRangeEl) scheduleRangeEl.textContent = 'Could not load schedule. Double-check the ID or try again.';
+      if (shareLinkEl) shareLinkEl.hidden = true;
       console.error(err);
-      alert(err.message || 'Unable to load schedule');
+      if (err?.message) alert(err.message);
     }
   }
 
@@ -182,18 +185,19 @@
     renderBands();
     renderTables();
     renderTopSlots();
-    appEl.dataset.loaded = 'true';
+    if (appEl) appEl.dataset.loaded = 'true';
   }
 
   function renderMeta() {
-    if (!state.schedule) {
+    if (!state.schedule || !scheduleRangeEl || !shareLinkEl || !metaPillsEl) {
       setStatus('No schedule loaded');
-      scheduleRangeEl.textContent = '';
-      shareLinkEl.hidden = true;
-      metaPillsEl.innerHTML = '';
+      if (scheduleRangeEl) scheduleRangeEl.textContent = '';
+      if (shareLinkEl) shareLinkEl.hidden = true;
+      if (metaPillsEl) metaPillsEl.innerHTML = '';
       return;
     }
     const s = state.schedule;
+    setStatus(s.title);
     const rangeText =
       s.startDate === s.endDate
         ? `${s.startDate} from ${pad(s.startHour)}:00 to ${pad(s.endHour)}:00`
@@ -201,8 +205,11 @@
     scheduleRangeEl.textContent = `${rangeText} (${s.slotMinutes}m slots)`;
     const url = new URL(window.location.href);
     url.searchParams.set('schedule', s.id);
-    shareLinkEl.textContent = url.toString();
-    shareLinkEl.hidden = false;
+    if (shareLinkEl) {
+      shareLinkEl.textContent = url.toString();
+      shareLinkEl.hidden = false;
+    }
+    if (!metaPillsEl) return;
     metaPillsEl.innerHTML = '';
     const pill = (label) => {
       const el = document.createElement('div');
@@ -252,7 +259,7 @@
 
   async function loadParticipant() {
     if (!state.schedule) return alert('Load a schedule first.');
-    const name = participantNameInput.value.trim();
+    const name = participantNameInput ? participantNameInput.value.trim() : '';
     if (!name) return alert('Enter your name first.');
     const res = await fetch(`/api/schedules/${encodeURIComponent(state.schedule.id)}/participants/${encodeURIComponent(name)}`);
     const data = await res.json();
@@ -265,7 +272,7 @@
       return;
     }
     state.selected = new Set(data.participant.availability || []);
-    participantTzSelect.value = data.participant.timeZone || state.viewerTimeZone;
+    if (participantTzSelect) participantTzSelect.value = data.participant.timeZone || state.viewerTimeZone;
     renderTables();
     renderBands();
     renderTopSlots();
@@ -273,10 +280,10 @@
 
   async function saveAvailability() {
     if (!state.schedule) return alert('Load a schedule first.');
-    const name = participantNameInput.value.trim();
+    const name = participantNameInput ? participantNameInput.value.trim() : '';
     if (!name) return alert('Enter your name.');
     const availability = Array.from(state.selected.values());
-    const body = { name, timeZone: participantTzSelect.value, availability };
+    const body = { name, timeZone: participantTzSelect ? participantTzSelect.value : 'UTC', availability };
     const res = await fetch(`/api/schedules/${encodeURIComponent(state.schedule.id)}/participants/${encodeURIComponent(name)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -295,10 +302,11 @@
   }
 
   function renderBands() {
+    if (!bandsEl) return;
     bandsEl.innerHTML = '';
     if (!state.schedule) return;
     const tzSet = new Set();
-    tzSet.add(participantTzSelect.value || state.viewerTimeZone);
+    tzSet.add(participantTzSelect ? participantTzSelect.value : state.viewerTimeZone);
     (state.aggregated?.participants || []).forEach(p => tzSet.add(p.timeZone));
     const tzs = Array.from(tzSet);
     const dayIndex = state.schedule.slotDayIndex || Array(state.schedule.slots.length).fill(0);
@@ -360,7 +368,7 @@
     const { days, grouped } = groupSlotsByDay();
     if (!grouped.length || !grouped[0]) return;
     const rowsPerDay = grouped[0].length;
-    const tz = participantTzSelect.value || state.viewerTimeZone;
+    const tz = participantTzSelect ? participantTzSelect.value : state.viewerTimeZone;
     const max = state.aggregated ? state.aggregated.maxCount : 0;
 
     const head = document.createElement('div');
@@ -431,6 +439,7 @@
   }
 
   function renderTopSlots() {
+    if (!topSlotsEl) return;
     topSlotsEl.innerHTML = '';
     if (!state.schedule || !state.aggregated) {
       topSlotsEl.textContent = 'No overlap yet. Mark availability to see matches.';
@@ -448,9 +457,9 @@
     pairs.slice(0, 5).forEach(pair => {
       const wrap = document.createElement('div');
       wrap.className = 'top-slot';
-      const range = formatRange(state.schedule.slots[pair.idx], state.schedule.slotMinutes, participantTzSelect.value);
+      const range = formatRange(state.schedule.slots[pair.idx], state.schedule.slotMinutes, participantTzSelect ? participantTzSelect.value : state.viewerTimeZone);
       const dayLabel =
-        dayIndex.length > pair.idx && state.schedule.days ? formatDay(state.schedule.days[dayIndex[pair.idx]], participantTzSelect.value) : '';
+        dayIndex.length > pair.idx && state.schedule.days ? formatDay(state.schedule.days[dayIndex[pair.idx]], participantTzSelect ? participantTzSelect.value : state.viewerTimeZone) : '';
       const left = document.createElement('div');
       left.innerHTML = `<strong>${range}</strong><br/><span class="hint">${dayLabel ? dayLabel + ' • ' : ''}${pair.count} people available</span>`;
       const pill = document.createElement('div');
@@ -499,5 +508,9 @@
     });
   }
 
-  init();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
